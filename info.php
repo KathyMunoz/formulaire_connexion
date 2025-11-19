@@ -3,6 +3,13 @@
 session_start();
 
 print_r($_SESSION);
+if (!empty($_SESSION)) {
+    echo "Pseudo : " . $_SESSION['nickname'] . "<br>";
+    echo "Email : " . $_SESSION['email'] . "<br>";
+    echo "Rôle : " . $_SESSION['role'] . "<br>";
+}else {
+    echo "Vous n'êtes pas connecté !";
+}
 ?>
 
 <!DOCTYPE html>

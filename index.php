@@ -106,29 +106,45 @@ if(isset($_POST['signIn'])){
 
 //FORMULAIRE
 //Vérifier que l'on reçoit le formulaire d'info
-$message = '';
-$data = [];
+
 if(isset($_POST['signUp'])){
-    $_SESSION = [
+    /*$_SESSION = [
         'nickname' => $_POST['nicknameSignUp'],
         'mdpSignUp' => $_POST['mdpSignUp']
-    ];
+    ];*/
     print_r($_SESSION);
-    if(!empty($_POST['nickname']) && !empty($_POST['mdpSignUp'])){
+    if(!empty($_POST['nicknameSignUp']) && !empty($_POST['mdpSignUp'])){
 
-        $nickname = htmlentities(stripslashes(strip_tags(trim($_POST['nickname']))));
+        $nicknameSignUp = htmlentities(stripslashes(strip_tags(trim($_POST['nicknameSignUp']))));
         $mdpSignUp = htmlentities(stripslashes(strip_tags(trim($_POST['mdpSignUp']))));
 
-        try{  
-        $req = $bdd->prepare('SELECT u.nick_name FROM users u WHERE u.nickname_user = ?');
+        $bdd = new PDO('mysql:host=localhost;dbname=task','root','root',array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
 
-        $req->bindParam(1,$nickname,PDO::PARAM_STR);
+        try{  
+        $req = $bdd->prepare('SELECT u.nickname_user, u.password_user, r.`role` FROM users u INNER JOIN `role` r ON u.id_role = r.id_role WHERE u.nickname_user = ?');
+
+        $req->bindParam(1,$nicknameSignUp,PDO::PARAM_STR);
         $req->execute();
         $data = $req->fetchAll();
-        print_r($data);
-        $message = "$nickname conecté";
+        
+        if($data) {
+            if(password_verify($mdpSignUp, $data['password_user'])){// Vérification du mot de passe avec password_verify()
+                // Enregistrement dans SESSION
+                $_SESSION['nicknameSignUp'] = $data['nickname_user'];
+                $_SESSION['email'] = $data['email_user'];
+                $_SESSION['role'] = $data['id_role'];
+                
+                $message = "Bravo! Connexion réussie ! ";
+                print_r($data);
+            }else {
+                $message = " mot de passe incorrect";
+            }
+        }else {
+            $message = "ton compte n'existe pas";
+        }
+        
 
-        } catch(EXCEPTION $error){
+    } catch(EXCEPTION $error){
             die($error-getMessage());
         }
 
@@ -173,7 +189,7 @@ if(isset($_POST['signUp'])){
         <h2>Formulaire de connexion</h2>
         <form action="" method="post">
             <label for="nicknameSignUp">Pseudo</label><input type="text" id="nicknameSignUp" name="nicknameSignUp">
-            <label for="mdpSignUp">Mot de passe</label><input type="text" id="mdpSignUp" name="mdpSignUp">
+            <label for="mdpSignUp">Mot de passe</label><input type="password" id="mdpSignUp" name="mdpSignUp">
             <input type="submit" name="signUp" value="Se Connecter">
         </form>
     </main>
