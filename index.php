@@ -106,13 +106,38 @@ if(isset($_POST['signIn'])){
 
 //FORMULAIRE
 //Vérifier que l'on reçoit le formulaire d'info
+$message = '';
+$data = [];
 if(isset($_POST['signUp'])){
     $_SESSION = [
         'nickname' => $_POST['nicknameSignUp'],
-        'email' => $_POST['emailSignUp']
+        'mdpSignUp' => $_POST['mdpSignUp']
     ];
+    print_r($_SESSION);
+    if(!empty($_POST['nickname']) && !empty($_POST['mdpSignUp'])){
+
+        $nickname = htmlentities(stripslashes(strip_tags(trim($_POST['nickname']))));
+        $mdpSignUp = htmlentities(stripslashes(strip_tags(trim($_POST['mdpSignUp']))));
+
+        try{  
+        $req = $bdd->prepare('SELECT u.nick_name FROM users u WHERE u.nickname_user = ?');
+
+        $req->bindParam(1,$nickname,PDO::PARAM_STR);
+        $req->execute();
+        $data = $req->fetchAll();
+        print_r($data);
+        $message = "$nickname conecté";
+
+        } catch(EXCEPTION $error){
+            die($error-getMessage());
+        }
+
+
+    }else {
+        $message = "Remplisez tout les champs";
+    }
 }
-print_r($_SESSION);
+
 ?>
 
 <!DOCTYPE html>
@@ -145,10 +170,10 @@ print_r($_SESSION);
         </form>
         <p> <?php echo $message ?></p>
 
-        <h2>Vos Infos</h2>
+        <h2>Formulaire de connexion</h2>
         <form action="" method="post">
             <label for="nicknameSignUp">Pseudo</label><input type="text" id="nicknameSignUp" name="nicknameSignUp">
-            <label for="emailSignUp">Email</label><input type="text" id="emailSignUp" name="emailSignUp">
+            <label for="mdpSignUp">Mot de passe</label><input type="text" id="mdpSignUp" name="mdpSignUp">
             <input type="submit" name="signUp" value="Se Connecter">
         </form>
     </main>
