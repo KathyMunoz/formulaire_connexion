@@ -3,13 +3,7 @@
 session_start();
 
 print_r($_SESSION);
-if (!empty($_SESSION)) {
-    echo "Pseudo : " . $_SESSION['nickname'] . "<br>";
-    echo "Email : " . $_SESSION['email'] . "<br>";
-    echo "Rôle : " . $_SESSION['role'] . "<br>";
-}else {
-    echo "Vous n'êtes pas connecté !";
-}
+
 ?>
 
 <!DOCTYPE html>
@@ -33,6 +27,7 @@ if (!empty($_SESSION)) {
         <h1>Voici Vos Infos</h1>
         <p>Pseudo : <?php echo $_SESSION['nickname'] ?> </p>
         <p>Email : <?php echo $_SESSION['email'] ?> </p>
+        <p>Email : <?php echo $_SESSION['role'] ?> </p>
         
     </main>
     <footer>

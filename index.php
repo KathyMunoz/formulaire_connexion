@@ -4,6 +4,7 @@ session_start();
 
 //Initialiser ma variable d'affichage
 $message = '';
+$messageCo = '';
 
 //FROMULAIRE INSCRIPTION
 //Vérifier que l'on reçoit le formulaire d'inscription
@@ -109,48 +110,52 @@ if(isset($_POST['signIn'])){
 
 if(isset($_POST['signUp'])){
     /*$_SESSION = [
-        'nickname' => $_POST['nicknameSignUp'],
-        'mdpSignUp' => $_POST['mdpSignUp']
+        'nicknameSignUp' => $_POST['nicknameSignUp'],
+        'mdpSignUp' => $_POST['mdpSignUp'],
+        
     ];*/
     print_r($_SESSION);
+    $data = [];//pour afficher info données au form
     if(!empty($_POST['nicknameSignUp']) && !empty($_POST['mdpSignUp'])){
 
         $nicknameSignUp = htmlentities(stripslashes(strip_tags(trim($_POST['nicknameSignUp']))));
         $mdpSignUp = htmlentities(stripslashes(strip_tags(trim($_POST['mdpSignUp']))));
 
         $bdd = new PDO('mysql:host=localhost;dbname=task','root','root',array(PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION));
-
+        $data = [];
         try{  
-        $req = $bdd->prepare('SELECT u.nickname_user, u.password_user, r.`role` FROM users u INNER JOIN `role` r ON u.id_role = r.id_role WHERE u.nickname_user = ?');
+            $req = $bdd->prepare('SELECT u.nickname_user, u.email_user, u.password_user, r.`role` FROM users u INNER JOIN `role` r ON u.id_role = r.id_role WHERE u.nickname_user = ? LIMIT 1');
 
-        $req->bindParam(1,$nicknameSignUp,PDO::PARAM_STR);
-        $req->execute();
-        $data = $req->fetchAll();
+            $req->bindParam(1,$nicknameSignUp,PDO::PARAM_STR);
+            $req->execute();
+            $data = $req->fetchAll();
+
+            print_r($data[0]['nickname_user']);
         
-        if($data) {
-            if(password_verify($mdpSignUp, $data['password_user'])){// Vérification du mot de passe avec password_verify()
-                // Enregistrement dans SESSION
-                $_SESSION['nicknameSignUp'] = $data['nickname_user'];
-                $_SESSION['email'] = $data['email_user'];
-                $_SESSION['role'] = $data['id_role'];
-                
-                $message = "Bravo! Connexion réussie ! ";
-                print_r($data);
-            }else {
-                $message = " mot de passe incorrect";
+
+            } catch(EXCEPTION $error){
+                die($error->getMessage());
+                }
+            print_r($data);
+            if(!empty($data)){
+                if(password_verify($mdpSignUp, $data[0]['password_user'])){// Vérification du mot de passe avec password_verify()
+                    // Enregistrement dans SESSION
+                    $_SESSION['nickname'] = $data[0]['nickname_user'];
+                    $_SESSION['email'] = $data[0]['email_user'];
+                    $_SESSION['role'] = $data[0]['role'];
+                    
+                    $messageCo = "{$_SESSION['nickname']} Connexion réussie";
+                    
+                }else {
+                    $messageCo = " Probleme de login et /ou mdp";
+                }
+
+            }else{
+                $messageCo = "Probleme de login et /ou mdp";
             }
-        }else {
-            $message = "ton compte n'existe pas";
-        }
-        
-
-    } catch(EXCEPTION $error){
-            die($error-getMessage());
-        }
-
 
     }else {
-        $message = "Remplisez tout les champs";
+        $messageCo = "Remplisez tout les champs";
     }
 }
 
@@ -192,6 +197,7 @@ if(isset($_POST['signUp'])){
             <label for="mdpSignUp">Mot de passe</label><input type="password" id="mdpSignUp" name="mdpSignUp">
             <input type="submit" name="signUp" value="Se Connecter">
         </form>
+        <p><?php echo $messageCo ?></p>
     </main>
     <footer>
 
